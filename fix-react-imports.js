@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 
-// Function to recursively scan for .tsx files
 function findTSXFiles(dir, files = []) {
   fs.readdirSync(dir).forEach(file => {
     const filePath = path.join(dir, file);
@@ -14,16 +13,22 @@ function findTSXFiles(dir, files = []) {
   return files;
 }
 
-// Get all .tsx files
 const tsxFiles = findTSXFiles(".");
 
 tsxFiles.forEach(file => {
-  const content = fs.readFileSync(file, "utf8");
-  if (!content.includes('import React from "react";')) {
-    const updatedContent = `import React from "react";\n${content}`;
-    fs.writeFileSync(file, updatedContent, "utf8");
-    console.log(`✅ Fixed: ${file}`);
-  }
+  let content = fs.readFileSync(file, "utf8");
+
+  // Remove duplicate `import React` lines
+  content = content.replace(/^import React from "react";\n?/gm, "");
+
+  // Remove `import * as React from "react";` if present
+  content = content.replace(/^import \* as React from "react";\n?/gm, "");
+
+  // Ensure `"use client";` is always at the top
+  content = content.replace(/(["']use client["'];\n?)/g, "$1\n");
+
+  fs.writeFileSync(file, content, "utf8");
+  console.log(`✅ Cleaned: ${file}`);
 });
 
-console.log("🎯 All .tsx files are updated.");
+console.log("🎯 All .tsx files are cleaned!");
