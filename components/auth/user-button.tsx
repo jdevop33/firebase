@@ -1,6 +1,5 @@
 'use client';
 
-
 import { UserButton as ClerkUserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 import { useTheme } from 'next-themes';

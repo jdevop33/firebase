@@ -2,11 +2,24 @@
   "extends": [
     "next/core-web-vitals",
     "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
     "plugin:prettier/recommended",
     "plugin:tailwindcss/recommended"
   ],
+  "plugins": ["@typescript-eslint", "react", "react-hooks", "prettier", "tailwindcss"],
   "rules": {
-    "prettier/prettier": ["error"],
-    "tailwindcss/no-custom-classname": "off"
+    "prettier/prettier": "error",
+    "react/no-unescaped-entities": "off",
+    "tailwindcss/no-custom-classname": "off",
+    "no-unused-vars": "warn",
+    "no-undef": "off",
+    "react/react-in-jsx-scope": "off"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }
