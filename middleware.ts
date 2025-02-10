@@ -1,17 +1,29 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { createClient } from '@/utils/supabase/middleware';
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { authMiddleware } from "@clerk/nextjs"; // ✅ Added Clerk Middleware
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { createClient } from "@/utils/supabase/middleware";
 
-export async function middleware(request: NextRequest) {
-  const { supabase, response } = createClient(request);
+export default authMiddleware({
+  beforeAuth: async (req) => {
+    const { supabase, response } = createClient(req);
 
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getSession();
+    // ✅ Refresh session if expired - required for Server Components
+    await supabase.auth.getSession();
 
-  return response;
-}
+    return response;
+  },
+  afterAuth: async (auth, req) => {
+    if (!auth.userId) {
+      // Redirect if user is not authenticated
+      return NextResponse.redirect(new URL("/sign-in", req.url));
+    }
 
+    return NextResponse.next();
+  },
+});
+
+// ✅ Preserve matcher settings
 export const config = {
   matcher: [
     /*
@@ -21,6 +33,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    "/((?!_next/static|_next/image|favicon.ico|public/).*)",
   ],
 };
