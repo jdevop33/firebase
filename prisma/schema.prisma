@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Asset {
+  id              String    @id @default(cuid())
+  name            String
+  type            AssetType
+  status          AssetStatus
+  location        String
+  coordinates     Json?     // Stores latitude and longitude
+  value           Float
+  purchaseDate    DateTime
+  condition       AssetCondition
+  expectedLifespan Int      // in years
+  manufacturer    String?
+  serialNumber    String?   @unique
+  warrantyExpiry  DateTime?
+  lastInspection  DateTime
+  nextInspection  DateTime
+  riskLevel       RiskLevel @default(LOW)
+  priority        Priority  @default(MEDIUM)
+  notes           String?   @db.Text
+  attachments     Json?     // Array of file URLs
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  userId          String
+  departmentId    String
+  
+  // Relations
+  department      Department       @relation(fields: [departmentId], references: [id])
+  maintenanceLogs MaintenanceLog[]
+  financialPlans  FinancialPlan[]
+  complianceReports ComplianceReport[]
+  insuranceDetails InsuranceDetail[]
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  budget      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  assets      Asset[]
+}
+
+model MaintenanceLog {
+  id          String   @id @default(cuid())
+  date        DateTime
+  type        MaintenanceType
+  description String   @db.Text
+  cost        Float
+  performedBy String
+  contractor  String?
+  parts       Json?    // Array of parts used
+  images      Json?    // Array of image URLs
+  assetId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  asset       Asset    @relation(fields: [assetId], references: [id])
+}
+
+model FinancialPlan {
+  id          String   @id @default(cuid())
+  year        Int
+  budget      Float
+  allocated   Float
+  spent       Float
+  fundingSource String
+  description String   @db.Text
+  startDate   DateTime
+  endDate     DateTime
+  status      PlanStatus @default(DRAFT)
+  assetId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  asset       Asset    @relation(fields: [assetId], references: [id])
+}
+
+model ComplianceReport {
+  id            String   @id @default(cuid())
+  reportType    String
+  content       Json     // Structured report data
+  status        ReportStatus @default(PENDING)
+  dueDate       DateTime
+  submissionDate DateTime?
+  findings      String?  @db.Text
+  recommendations String? @db.Text
+  assetId       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  asset         Asset    @relation(fields: [assetId], references: [id])
+}
+
+model InsuranceDetail {
+  id              String   @id @default(cuid())
+  policyNumber    String   @unique
+  provider        String
+  coverage        Float
+  startDate       DateTime
+  endDate         DateTime
+  documents       Json?    // Array of document URLs
+  assetId         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  asset           Asset    @relation(fields: [assetId], references: [id])
+}
+
+enum AssetType {
+  BUILDING
+  VEHICLE
+  EQUIPMENT
+  INFRASTRUCTURE
+  LAND
+  IT_SYSTEM
+  UTILITY
+}
+
+enum AssetStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  DISPOSED
+  PLANNED
+}
+
+enum AssetCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  CRITICAL
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+  PREDICTIVE
+  EMERGENCY
+  INSPECTION
+}
+
+enum PlanStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum ReportStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+  REJECTED
+}
