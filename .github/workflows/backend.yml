@@ -2,14 +2,14 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'app/api/**'
       - 'prisma/**'
       - 'requirements.txt'
       - 'Dockerfile.backend'
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'app/api/**'
       - 'prisma/**'
@@ -42,21 +42,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-asyncio httpx
-          
+
       - name: Generate Prisma Client
         run: prisma generate
-        
+
       - name: Run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bolt2_test

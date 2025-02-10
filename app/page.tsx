@@ -1,3 +1,4 @@
+import React from "react";
 import { auth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
